@@ -1,5 +1,5 @@
-# ml-dvc-demo
-Machine Learning Template using Data Version Control (dvc.org).
+# dvc-project-template
+DVC project template
 
 ## STEPS -
 

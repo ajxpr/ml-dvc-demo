@@ -1,27 +1,51 @@
 # add stages here 
 stages:
-  stage_one:
-    cmd: python stage_01.py
+  get_data:
+    cmd: python src/stage_01_load_save.py
     deps:
-    - stage_01.py
+    - src/stage_01_load_save.py
+    - src/utils/common.py
+    - configs/config.yaml
     outs:
-    - output.txt
+    - artifacts/raw_local_dir/data.csv
 
-  stage_two:
-    cmd: python stage_02.py
+  split_data:
+    cmd: python src/stage_02_split_data.py
     deps:
-    - stage_02.py
-    - output.txt
+    - src/stage_02_split_data.py
+    - src/utils/common.py
+    - artifacts/raw_local_dir/data.csv
+    - configs/config.yaml
+    params:
+      - base.random_state
+      - base.test_size
     outs:
-    - output2.txt
+    - artifacts/split_data_dir/train.csv
+    - artifacts/split_data_dir/test.csv
 
-  stage_three:
-    cmd: python stage_03.py
+  train:
+    cmd: python src/stage_03_train.py
     deps:
-    - stage_03.py
-    - output.txt
+    - src/stage_03_train.py
+    - src/utils/common.py
+    - artifacts/split_data_dir/train.csv
+    - configs/config.yaml
+    params:
+      - model_params.ElasticNet.alpha
+      - model_params.ElasticNet.l1_ratio
+      - base.random_state
+    outs:
+    - artifacts/model_dir/model.pkl
 
-  stage_four: 
-    cmd: cat output2.txt
+  evaluate:
+    cmd: python src/stage_04_evaluate.py
     deps:
-    - output2.txt
+    - src/stage_04_evaluate.py
+    - src/utils/common.py
+    - artifacts/split_data_dir/test.csv
+    - artifacts/model_dir/model.pkl
+    - configs/config.yaml
+    - params.yaml
+    metrics:
+      - scores.json:
+          cache: false
